@@ -1082,8 +1082,13 @@ class API extends CI_Controller
 		$Param = GetPost($this->input);
 		
 		if ($action == 'Update') {
+			if (empty($Param['customer_category'])) {
+				$this->terminate("Category required.");
+				exit;
+			}
+			
 			// Get Customer Category
-			$ParamCategory = array( 'ForceInsert' => 1, 'category' => 'Gereja Apps', 'client_id' => $Validation['client_id'] );
+			$ParamCategory = array( 'ForceInsert' => 1, 'category' => $Param['customer_category'], 'client_id' => $Validation['client_id'] );
 			$CustomerCategory = $this->Customer_Category_model->GetByID($ParamCategory);
 			
 			// Insert / Update Customer
