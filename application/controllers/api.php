@@ -1093,6 +1093,7 @@ class API extends CI_Controller
 			
 			// Insert / Update Customer
 			$Param['client_id'] = $Validation['client_id'];
+			$Param['category'] = $Param['customer_category'];
 			$Result = $this->Customer_model->Update($Param);
 			
 			// Insert / Update Customer Detail
