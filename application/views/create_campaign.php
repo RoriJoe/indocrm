@@ -22,7 +22,7 @@ $page_header = '
         STATIC_URL = '.json_encode(base_url('/static')).';
         BASE_URL = '.json_encode(site_url()).';
         CURRENT_CAMPAIGN = '.json_encode($campaign).';
-        COUNTER_LIMIT = '.$counter.';
+        COUNTER_LIMIT = '.intval($counter).';
         LIMIT = 500;
     </script>
     <script type="text/javascript" src="'.base_url('static/models.js').'"></script>

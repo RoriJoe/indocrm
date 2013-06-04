@@ -240,16 +240,40 @@ class Cronjob extends CI_Controller
 		*/
 	}
 	
-	function resetquota()
+	function get_time_server()
+    {
+        /*-- date server 16:59
+        * sama dengan WIB 23:59
+        ---*/
+        if(date("H:i")=='16:59')
+        {
+            echo "reset";
+        }else{
+            echo "gak onok";
+        }
+        
+    }
+    function resetquota()
 	{
 		//Kebijakan baru disable quota free
 		/*$this->log("reset quota e-mail dan sms");
 		$this->db->query("UPDATE clients SET mail_free = 50, sms_free = 50, counter_limit = 0");
 		*/
-		//reset for API
+        
+        /*--- Reset tabel Clients 
+        * kolom counter_limit
+        * khusus untuk user rri client_id : 11,45,46,47,70
+        * date server 16:59 sama dengan WIB 23:59
+        ---*/
+
+        //if(date("H:i")=='16:59')
+       // {
+            $this->db->query("UPDATE clients SET counter_limit = 0 WHERE  client_id IN (11,45,46,47,70)");
+        //}
+
+	//reset for API
 		
 		$this->db->query("UPDATE api_limit SET counter = 0");
-		
 		$this->tagihan();
 	}
 	
@@ -732,11 +756,13 @@ class Cronjob extends CI_Controller
 			
 			
 			//if ($campaign->client_id != 109){
-			if (in_array($campaign->client_id, array(11,45,46,47,70))){
+			if (in_array($campaign->client_id, array(11,45,46,47,70)))
+			{
 				$query = $this->db->query("SELECT counter_limit FROM clients WHERE client_id = {$campaign->client_id} LIMIT 1");
 				//echo $this->db->last_query();
 				$rs = $query->result();
-				if ($rs[0]->counter_limit >= 500){
+				if ($rs[0]->counter_limit >= 500)
+				{
 					$this->log("SMS LIMIT reached, break!!");
 					exit;
 				}
@@ -788,6 +814,10 @@ class Cronjob extends CI_Controller
 
 			foreach($customers as $customer)
 			{
+            
+                /*-- reset signature to null --*/
+                $postfix ="";
+                
 				/*if ($this->_checkpulsa_sms() === TRUE){
 				//	$this->_sending_report_pulsa_habis();
 					break;
@@ -804,12 +834,13 @@ class Cronjob extends CI_Controller
 					continue;
 				}
 				
-				$postfix = "\n\nPengirim: {$this->company->phone} ";
-					
+				//$postfix = "\n\nPengirim: {$this->company->phone} ";
+				
 				/*if (in_array($client->client_id, array(48, 36))){
 					$postfix = "";
 				}*/
 				
+				/*
 				if ($client->client_type == 0)
 				{
 					$maxsmslen = 160;
@@ -820,7 +851,9 @@ class Cronjob extends CI_Controller
                     elseif (in_array($client->client_id, array(106)))
                     {
 						$postfix .= "\n".(empty($campaign->signature)? '' : $campaign->signature);
-					}else{
+					}
+					else
+					{
 						$postfix .= "\nSMS GRATIS IndoCRM.com";
 					}
 				}
@@ -830,14 +863,21 @@ class Cronjob extends CI_Controller
 					if (in_array($client->client_id, array(48, 36)))
 					{
 						$postfix .= "\nmalang.sbp.net.id\nvia IndoCRM.com";
-					}else{
+					}
+					else
+					{
 						$postfix .= "\n".(empty($campaign->signature)? '' : $campaign->signature);
 					}
 				}
 				
-				if ($client->client_id == 109){
+				if ($client->client_id == 109)
+				{
 					$postfix = '';
 				}
+				*/
+				
+				$maxsmslen = 160*4;
+				$postfix .= "\n".(empty($campaign->signature)? '' : $campaign->signature);
 				
 				if (strlen($body_plain) + strlen($postfix) > $maxsmslen)
 				{
@@ -862,16 +902,23 @@ class Cronjob extends CI_Controller
 				$clientsmsquota = $client->sms_quota;
 				$clientsmsfree = $client->sms_free;
 				
-				if ($clientsmsquota > 0){
+				if ($clientsmsquota > 0)
+				{
 					$clientsmsquota -= $total_sms;
-					if ($clientsmsquota < 0){
+					if ($clientsmsquota < 0)
+					{
 						$kelebihan = abs($clientsmsquota);
 						$clientsmsquota += $kelebihan;
 						$clientsmsfree -= $total_sms;
 					}
-				}else{
+				}
+				else
+				{
 					$clientsmsfree -= $total_sms;
 				}
+				
+				if ($clientsmsfree < 0) $clientsmsfree = 0;
+				if ($clientsmsquota < 0) $clientsmsquota = 0;
 				
 				if ($this->is_over_quota($client->sms_count+$total_sms, $clientsmsquota, $clientsmsfree))
 				{
@@ -897,7 +944,8 @@ class Cronjob extends CI_Controller
 				$this->db->query("INSERT INTO smslog ( to_number, body_plain, campaign_id, sms_number, total_count, customer_id, client_id, queue_id ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )", 
 						array( $to_number, $body_plain, $campaign->campaign_id, $total_count, 0, $customer->customer_id, $client->client_id, $queue_id ));
 				
-				if ($client->sms_quota > $total_sms){
+				if ($client->sms_quota > $total_sms)
+				{
 					
 					/*$client->sms_quota -= $total_sms;
 					
@@ -909,7 +957,9 @@ class Cronjob extends CI_Controller
 					
 					$client->sms_count += $total_sms;
 					
-				}else{
+				}
+				else
+				{
 					if ($client->sms_free > $total_sms)
 					{
 						$client->sms_free -= $total_sms;
@@ -934,7 +984,8 @@ class Cronjob extends CI_Controller
 				$this->db->where('is_crontab', '1');
 				$this->db->where('campaign_type', 'sms');
 				$q = $this->db->get('campaign');
-				if ($q->num_rows()>0){
+				if ($q->num_rows()>0)
+				{
 					$sql = "UPDATE cron_schedule SET counter = counter + ".$total_sms.", exec_date = '$tanggalnow', exec_time = '$timenow' WHERE counter_limit <> 0 AND campaign_id = {$campaign->campaign_id}";
 					$this->db->query($sql);
 					

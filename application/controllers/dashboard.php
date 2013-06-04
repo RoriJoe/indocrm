@@ -49,6 +49,7 @@ class Dashboard extends CI_Controller
 		$sms_quota = 0;
 		$is_active = 0;
 		$sms_free = 0;
+		$usemask = 0;
 
 		if ( !isset($this->company) )
 		{
@@ -61,6 +62,7 @@ class Dashboard extends CI_Controller
 			$sms_quota = $this->company->sms_quota; 
 			$is_active = $this->company->is_active;
 			$sms_free = $this->company->sms_free; 
+			$usemask = $this->company->allowmask; 
 		}
 		
 		$result['sms_count'] = $sms_count;
@@ -76,6 +78,7 @@ class Dashboard extends CI_Controller
 			$html = '<form method="post" action="'.site_url('dashboard/sendsms').'">'.
 					'<div><label for="id_msisdn">HP</label><input type="text" name="msisdn" id="id_msisdn" size="20" value="" placeholder="Nomer handphone" /></div>'.
 					'<div id="smscontainer"><label for="adhocsms">Pesan SMS</label><span id="adhoclen"></span><textarea id="adhocsms" name="adhocsms" cols="20" rows="2"></textarea></div>'.
+					'<div><label for="usemask">&nbsp;</label><input type="checkbox" name="usemask" id="usemask" value="'.$usemask.'" /> <label for="usemask">Sender masking (if available)</label></div>'.
 					'<div><input type="submit" id="dosendsms" class="btn btn.small" value="Kirim" /></div></form>';
 			
 			if ($query->num_rows())
@@ -140,10 +143,12 @@ class Dashboard extends CI_Controller
 		$sms_quota = 0;
 		$is_active = 0;
 		$sms_free = 0;
+		$allowmask = 0;
 		
 		$msisdn = preg_replace('~[^0-9,]+~', '', $this->input->get_post('msisdn'));
         $msisdn = array_filter(explode(',',$msisdn));
 		$sms = substr($this->input->get_post('sms'),0,160);
+		$usemask = $this->input->get_post('usemask');
 		
 		if (!$msisdn || !$sms)
 		{
@@ -162,12 +167,15 @@ class Dashboard extends CI_Controller
 				$sms_quota = $this->company->sms_quota; 
 				$is_active = $this->company->is_active;
 				$sms_free = $this->company->sms_free;
+				$allowmask = $this->company->allowmask;
 			}
 			
 			$result['sms_count'] = $sms_count;
 			$result['sms_quota'] = $sms_quota;
 			$result['is_active'] = $is_active;
 			$result['sms_free'] = $sms_free;
+			
+			if (!$allowmask) $usemask = 0;
 
 			if ( $this->orca_auth->user->client_id == 0 || $sms_free > 0 || ( $is_active && ( $sms_quota == 0 || $sms_count < $sms_quota ) ) )
 			{
@@ -209,6 +217,7 @@ class Dashboard extends CI_Controller
 				
 				$diff = 180;
 				$now = date('Y-m-d H:i:s');
+				
 				$this->db->query("INSERT INTO adhoc_sms (user_id, sent_time) VALUES (?,?)
 					ON DUPLICATE KEY UPDATE sent_time = ?", array($this->orca_auth->user->id,$now,$now));
 
@@ -224,7 +233,7 @@ class Dashboard extends CI_Controller
 				foreach( $msisdn as $m )
 				{
 					if (!$m) continue;
-					$this->db->query("INSERT INTO smsqueue ( tanggal, number, message ) VALUES ( ?, ?, ? )", array( $tanggal, $m, $sms ));
+					$this->db->query("INSERT INTO smsqueue ( tanggal, number, message, usemask ) VALUES ( ?, ?, ?, ? )", array( $tanggal, $m, $sms, $usemask ));
 					$queue_id = $this->db->insert_id();
 
 					$this->db->query("INSERT INTO smslog ( to_number, body_plain, campaign_id, sms_number, total_count, customer_id, client_id, queue_id ) VALUES ( ?, ?, 0, 0, 0, 0, ?, ? )", 
@@ -389,7 +398,17 @@ class Dashboard extends CI_Controller
 		
         }
 
-		$sql = "SELECT COUNT(*) as cnt FROM `log_mo` WHERE client_id = '$client_id' AND  is_read != '2' $strTgl $strTimeFilter AND msisdn NOT IN ('".implode("','",$arrFilter[0])."') ".$wordsblacklist;
+		$wherex = '';
+		if ($client_id == 139)
+		{
+			$wherex = "client_id IN ('$client_id',45,46,47,70)";
+		}
+		else
+		{
+			$wherex = "client_id IN ('$client_id')";
+		}
+		
+		$sql = "SELECT COUNT(*) as cnt FROM `log_mo` WHERE $wherex AND  is_read != '2' $strTgl $strTimeFilter AND msisdn NOT IN ('".implode("','",$arrFilter[0])."') ".$wordsblacklist;
 		$query = $this->db->query($sql);
 		//echo __LINE__.":".$this->db->last_query();
 		$res = $query->result_array();
@@ -410,7 +429,7 @@ class Dashboard extends CI_Controller
         $paging = new Paging(array('page' => $page, 'offset' => $limit, 'page_param' => 'page', 'page_url' => site_url( 'dashboard/wgpenyiar/'.$path )));
         $pages = $paging->create_paging( $data['total'] );
 
-		$sql = "SELECT * FROM `log_mo` WHERE client_id = '$client_id' AND is_read != '2' $strTgl $strTimeFilter AND msisdn NOT IN ('".implode("','",$arrFilter[0])."') ".$wordsblacklist." ORDER BY date DESC, time DESC LIMIT {$paging->start}, {$paging->offset}";
+		$sql = "SELECT * FROM `log_mo` WHERE $wherex AND is_read != '2' $strTgl $strTimeFilter AND msisdn NOT IN ('".implode("','",$arrFilter[0])."') ".$wordsblacklist." ORDER BY date DESC, time DESC LIMIT {$paging->start}, {$paging->offset}";
 		
 		$result = array();
 		$query = $this->db->query($sql);
@@ -506,6 +525,8 @@ class Dashboard extends CI_Controller
         $jam1 = date('H:i:s', strtotime('-1 hour'));
         
 		$strclient = $client_id == 0 ? "1=1" : "client_id = '$client_id'";
+		if ($client_id == 139)
+			$strclient = "client_id IN (45,46,47,70,139)";
         $where = $since ? " AND id > '$since'" : " AND date = '$curdate' AND time BETWEEN '$jam1' AND '$jam2'";
         
 		$sql = "SELECT COUNT(*) as cnt FROM `log_mo` WHERE $strclient  AND is_read != '2' $where AND msisdn NOT IN ('".implode("','",$arrFilter[0])."') ".$wordsblacklist;

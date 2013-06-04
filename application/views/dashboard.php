@@ -40,7 +40,7 @@ $this->load->view('header', array('page_title' => $page_title));
 					$q = $this->db->get('clients');
 					$res = $q->result();
 					
-					if ($res[0]->client_type == -1): ?>
+					if ($res && $res[0]->client_type == -1): ?>
 					<div class="dialog">
 						<h2>SELAMAT DATANG DI INDOCRM</h2>
 						<p>Anda sekarang ini berada di Paket <span style="color:red;font-weight:bold;">FREE</span>. Anda hanya punya kapasitas <span style="font-weight:bold;text-decoration:underline;">Quota 50 Free SMS</span>. Kami memberikan penawaran menarik bagi Anda untuk mengikuti Paket <strong>PERSONAL</strong>, <strong>PROFESSIONAL</strong> atau <strong>CORPORATE</strong>.</p>

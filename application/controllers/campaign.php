@@ -1177,22 +1177,46 @@ class Campaign extends CI_Controller
 			$q = $this->db->get('clients');
 			$res = $q->result();
 			$limit = 500;
-			if ($res[0]->counter_limit >= $limit){
-				
-			}else{
-				
-				$this->db->where('client_id', $this->orca_auth->user->client_id);
-				$q = $this->db->get('customers');
-				$total = $this->db->count_all_results();
-				
-				if ($total >= $limit){
-					$success = false;
-				}else{
-					$this->db->query("DELETE FROM campaign_details WHERE campaign_id = {$data->campaign_id}");
-					
-					$this->db->query("INSERT INTO campaign_details (customer_id, campaign_id) SELECT customer_id, '{$data->campaign_id}' AS campaign_id FROM customers WHERE client_id = {$this->orca_auth->user->client_id} AND is_delete = 0 AND mobile IS NOT NULL AND mobile <> '' GROUP BY mobile");
-				}
-			}
+            
+            /*--- 
+            * khusus untuk user rri client_id : 11,45,46,47,70
+            ---*/
+            $array_rri = array(11,45,46,47,70);
+            if (in_array($this->orca_auth->user->client_id, $array_rri)) 
+            {
+                /* this is RRI user */
+                if ($res[0]->counter_limit >= $limit)
+                {
+                    /* counter sms sudah = 500 atau lebih */
+                    $success = false;
+                }else
+                {
+                    
+                    $this->db->where('client_id', $this->orca_auth->user->client_id);
+                    $q = $this->db->get('customers');
+                    $total = $this->db->count_all_results();
+                    
+                    if ($total >= $limit)
+                    {
+                        /* kotak yg dipilih lebih dari 500 */
+                        $success = false;
+                    }else
+                    {
+                        $this->db->query("DELETE FROM campaign_details WHERE campaign_id = {$data->campaign_id}");
+                        
+                        $this->db->query("INSERT INTO campaign_details (customer_id, campaign_id) SELECT customer_id, '{$data->campaign_id}' AS campaign_id FROM customers WHERE client_id = {$this->orca_auth->user->client_id} AND is_delete = 0 AND mobile IS NOT NULL AND mobile <> '' GROUP BY mobile");
+                    }
+                }
+            }else
+            {
+                /* selain RRI User */
+                $this->db->query("DELETE FROM campaign_details WHERE campaign_id = {$data->campaign_id}");
+                        
+                $this->db->query("INSERT INTO campaign_details (customer_id, campaign_id) SELECT customer_id, '{$data->campaign_id}' AS campaign_id FROM customers WHERE client_id = {$this->orca_auth->user->client_id} AND is_delete = 0 AND mobile IS NOT NULL AND mobile <> '' GROUP BY mobile");
+            }
+            
+                
+			
 		}
 			
 		echo json_encode(array('success' => $success, 'data' => $data, 'next' => $next));

@@ -126,7 +126,7 @@ $this->load->view('header', array('page_title' => $page_title, 'page_header' => 
                             <td><span rel="'.h($row['id']).'" class="inline_text">'.h($row['email']?$row['email']:'empty').'</span><input class="inline_edit" type="text" name="email['.h($row['id']).']" value="'.h($row['email']).'" size="20" /></td>
                             <td><span rel="'.h($row['id']).'" class="inline_text">'.h($row['name']?$row['name']:'empty').'</span><input class="inline_edit" type="text" name="name['.h($row['id']).']" value="'.h($row['name']).'" size="20" /></td>';
                         if (!$this->orca_auth->user->client_id){
-							echo '<td><span rel="'.h($row['is_confirmed']).'" class="inline_text">'.h($row['is_confirmed']?'Sudah Confirm':'Belum Confirm').'</span>';
+							echo '<td><span rel="'.h($row['id']).'" class="inline_text">'.h($row['is_confirmed']?'Sudah Confirm':'Belum Confirm').'</span>';
 							echo '<select class="inline_edit" name="is_confirmed['.h($row['id']).']">';
 							foreach($arrConfirmed as $key => $konf){
 								echo '<option value="'.$key.'">'.$konf.'</option>';

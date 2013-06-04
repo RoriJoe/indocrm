@@ -44,7 +44,6 @@ class User_model extends CI_Model
 				self::$companies[$client_id] = $r->row();
 			}
 		}
-		
 		return isset(self::$companies[$client_id])?self::$companies[$client_id]:0;
 	}
 	
@@ -104,7 +103,7 @@ class User_model extends CI_Model
 			 * 
 			*/
 
-			if (in_array($this->orca_auth->user->client_id, array(45,46,47,70)))
+			if (in_array($this->orca_auth->user->client_id, array(45,46,47,70,139)))
             {
                 /**
                  * this is for local use only
@@ -133,6 +132,8 @@ class User_model extends CI_Model
 			{
 				if ( !$perm->perm_path )
 				{
+					if ($this->orca_auth->user->client_id == 139 && in_array($perm->perm_name, array('Sales', 'Tagihan')))
+						continue;
 					if ($parent_id == 0)
 					{
 						echo '<li class="'.$perm->perm_class.'"><h2>'.$perm->perm_name.'</h2>';
@@ -145,6 +146,8 @@ class User_model extends CI_Model
 				else
 				{
 					$path = $perm->perm_path;
+					if ($this->orca_auth->user->client_id == 139 && in_array($path, array('invoices', 'invoices/design', 'products')))
+						continue;
 					echo '<li><a class="'.$perm->perm_class.'" href="'.site_url($perm->perm_path).'" title="'.$perm->perm_name.'">'.$perm->perm_name.'</a>';
 				}
 
@@ -154,7 +157,7 @@ class User_model extends CI_Model
 				echo '</ul></li>';
 			}
 			
-			if ($parent_id == 8 && in_array($this->orca_auth->user->client_id, array(45,46,47,70))){
+			if ($parent_id == 8 && in_array($this->orca_auth->user->client_id, array(45,46,47,70,139))){
 				$path = site_url('/dashboard/wgpenyiar/');
 				echo '<li><a class="'.$perm->perm_class.'" href="'.$path.'">SMS Masuk Penyiar</a></li>';
 			}
@@ -171,7 +174,7 @@ class User_model extends CI_Model
 		$this->db->where('client_id', $client_id);
 		$this->db->select('is_active');
 		$q = $this->db->get('clients');
-		echo $this->db->last_query();
+		// echo $this->db->last_query();
 		if ($q->num_rows()>0){
 			$res = $q->result();
 			$active = $res[0]->is_active;

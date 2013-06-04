@@ -164,7 +164,7 @@ class Users extends CI_Controller
 				$arremail = p('email');
 				$arrname = p('name');
 				$arrconfirm = p('is_confirmed');
-				$arrid = p('selected');
+				$arrid = p('id');
 				$arrclient_id = p('client_id');
 				
 				do
@@ -196,8 +196,6 @@ class Users extends CI_Controller
 					
 					foreach( $arrid as $k => $id )
 					{
-					
-						
 						$this->db->where('id',$id);
 						$q = $this->db->get('users');
 						$res = $q->result();
@@ -216,6 +214,7 @@ class Users extends CI_Controller
 						else $data['password'] = $this->orca_auth->make_hash($data['password'], '', true);
 
 						$error = $this->update_users($data);
+						
 						if ($error)
 						{
 							flashmsg_set($error);

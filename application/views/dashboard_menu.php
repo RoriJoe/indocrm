@@ -31,30 +31,33 @@ if ($this->orca_auth->user->group_id != 6){
 									$this->company = $this->User_model->get_company($this->orca_auth->user->client_id);
 								}
                                 
-                                echo "
-                                <table style='width:100%;'>
-                                <tr>
-                                    <th>MEMBER STATUS</th>
-                                    <td>".($this->company->is_active?"AKTIF":"PENDING")."</td>
-                                </tr>
-                                <tr>
-                                    <th>E-Mail Terpakai</th>
-                                    <td>{$this->company->mail_count} dari {$this->company->mail_quota}</td>
-                                </tr>
-                                <tr>
-                                    <th>SMS Terpakai</th>
-                                    <td>{$this->company->sms_count} dari {$this->company->sms_quota}</td>
-                                </tr>
-                                <tr>
-                                    <th>SISA E-Mail Gratis</th>
-                                    <td>{$this->company->mail_free}</td>
-                                </tr>
-                                <tr>
-                                    <th>SISA SMS Gratis</th>
-                                    <td>{$this->company->sms_free}</td>
-                                </tr>
-                                </table>
-                                ";
+								if ($this->orca_auth->user->client_id != 139)
+								{
+									echo "
+									<table style='width:100%;'>
+									<tr>
+										<th>MEMBER STATUS</th>
+										<td>".($this->company->is_active?"AKTIF":"PENDING")."</td>
+									</tr>
+									<tr>
+										<th>E-Mail Terpakai</th>
+										<td>{$this->company->mail_count} dari {$this->company->mail_quota}</td>
+									</tr>
+									<tr>
+										<th>SMS Terpakai</th>
+										<td>{$this->company->sms_count} dari {$this->company->sms_quota}</td>
+									</tr>
+									<tr>
+										<th>SISA E-Mail Gratis</th>
+										<td>{$this->company->mail_free}</td>
+									</tr>
+									<tr>
+										<th>SISA SMS Gratis</th>
+										<td>{$this->company->sms_free}</td>
+									</tr>
+									</table>
+									";
+								}
 							}
 							 
 							?>
@@ -97,6 +100,8 @@ if ($this->orca_auth->user->group_id != 6){
 											
 											var msisdn = Ext.String.trim(Ext.get('id_msisdn').getValue());
 											var sms = Ext.String.trim(Ext.get('adhocsms').getValue());
+											var cbusemask = document.getElementById("usemask");
+											var usemask = cbusemask.checked?cbusemask.value:0;
 											
 											if (!msisdn || !sms) {
 												Ext.Msg.alert('error', 'Mohon isi SMS dan nomer handphone yg dituju');
@@ -115,7 +120,7 @@ if ($this->orca_auth->user->group_id != 6){
 											con.request({
 												url: '<?php echo site_url(); ?>/dashboard/sendsms',
 												method: 'POST',
-												params:{msisdn:msisdn,sms:sms},
+												params:{msisdn:msisdn,sms:sms,usemask:usemask},
 												success:function(response){
 													var data = Ext.JSON.decode(response.responseText);
 													if (data.error) {

@@ -8,19 +8,21 @@
  * ferdhie@orca.web.id
  * http://ferdianto.com/
  */
-$counter = 0;
+$counter = 0; $quota = 0;
 
-$sql = "SELECT counter_limit FROM clients WHERE client_id = '".$this->orca_auth->user->client_id."'";
+$sql = "SELECT counter_limit, sms_quota FROM clients WHERE client_id = '".$this->orca_auth->user->client_id."'";
 $q = $this->db->query($sql);
 $res = $q->result();
 $counter = $res[0]->counter_limit;
+$quota = $res[0]->sms_quota;
 
 $page_header = '
     <script type="text/javascript">
         STATIC_URL = '.json_encode(base_url('/static')).';
         BASE_URL = '.json_encode(site_url()).';
         CURRENT_CAMPAIGN = '.json_encode($campaign).';
-        COUNTER_LIMIT = '.$counter.';
+        COUNTER_LIMIT = '.intval($counter).';
+        SMS_QUOTA = '.intval($quota).';
         CLIENT_ID = '.$this->orca_auth->user->client_id.';
         LIMIT = 500;
     </script>

@@ -65,6 +65,16 @@ class Company extends CI_Controller
             $data[$f] = $this->input->post($f);
         }
         
+        /* validasi mobile -> mo.php */
+        $query = $this->db->get_where('clients', array('mobile' => $data['mobile'], 'client_id !=' => $this->orca_auth->user->client_id ), 1);
+        if ($query->num_rows() && $data['mobile'] )
+        {
+            $result['error'] = "No Kontak Mobile sudah digunakan";
+            $result['db'] = $this->db->queries;
+            echo json_encode($result);
+            return;
+        }
+        
         if ( isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name']) )
         {
             $config = array();
@@ -101,6 +111,8 @@ class Company extends CI_Controller
                 return;
             }
         }
+        
+        
         
         $query = $this->db->get_where('clients', array('client_id'=> $this->orca_auth->user->client_id), 1);
         if ($query->num_rows())

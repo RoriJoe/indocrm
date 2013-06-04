@@ -466,7 +466,7 @@ class Customers extends CI_Controller
 		$where = 'is_delete = 0';
 		if ( $this->orca_auth->user->client_id )
 		{
-			$where .= " AND client_id = ".$this->orca_auth->user->client_id . " ";
+			$where .= ($this->orca_auth->user->client_id == 139 ? " AND client_id IN (45,46,47,70,139)" : (" AND client_id = ".$this->orca_auth->user->client_id . " "));
 		}
 		
 		if ($q)
@@ -482,7 +482,7 @@ class Customers extends CI_Controller
 			$where = 'is_delete = 0';
 			if ( $this->orca_auth->user->client_id )
 			{
-				$where .= " AND client_id = ".$this->orca_auth->user->client_id." ";
+				$where .= ($this->orca_auth->user->client_id == 139 ? " AND client_id IN (45,46,47,70,139)" : (" AND client_id = ".$this->orca_auth->user->client_id . " "));
 			}
 
 			if ($q)

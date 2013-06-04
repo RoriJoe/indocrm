@@ -35,16 +35,16 @@ switch($act)
 			break;
 		}else{*/
 			$q = array();
-			$rs = mysql_query("SELECT id, number, message FROM smsqueue WHERE status = 0 ORDER BY id LIMIT 20");
+			$rs = mysql_query("SELECT id, number, message, usemask FROM smsqueue WHERE status = 0 ORDER BY id LIMIT 20");
 			while($r = mysql_fetch_assoc($rs))
 			{
-				$q[$r['id']] = array('number'=>$r['number'], 'message'=>preg_replace('/[^(\xA+\x20-\x7F)]*/','', $r['message']));
+				$q[$r['id']] = array('number'=>$r['number'], 'message'=>preg_replace('/[^(\xA+\x20-\x7F)]*/','', $r['message']), 'usemask'=>$r['usemask']);
 			}
 			
-			$rs = mysql_query("SELECT id, number, message FROM smsqueue_partner WHERE status = 0 ORDER BY id LIMIT 20");
+			$rs = mysql_query("SELECT id, number, message, usemask FROM smsqueue_partner WHERE status = 0 ORDER BY id LIMIT 20");
 			while($r = mysql_fetch_assoc($rs))
 			{
-				$q['p'.$r['id']] = array('number'=>$r['number'], 'message'=>preg_replace('/[^(\xA+\x20-\x7F)]*/','', $r['message']));
+				$q['p'.$r['id']] = array('number'=>$r['number'], 'message'=>preg_replace('/[^(\xA+\x20-\x7F)]*/','', $r['message']), 'usemask'=>$r['usemask']);
 			}
 			echo json_encode(array('num'=>count($q), 'items'=>$q));
 			die();

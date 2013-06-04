@@ -64,7 +64,8 @@ class SmsLog extends CI_Controller
         
         if ( $this->orca_auth->user->client_id )
         {
-            $this->db->where('client_id', $this->orca_auth->user->client_id);
+            //$this->db->where('client_id', $this->orca_auth->user->client_id);
+            $this->db->where($this->orca_auth->user->client_id == 139 ? "client_id IN (45,46,47,70,139)" : ("client_id = {$this->orca_auth->user->client_id}"));
         }
         
         if ($q)
@@ -88,7 +89,8 @@ class SmsLog extends CI_Controller
 			client_id, queue_id");
             if ( $this->orca_auth->user->client_id )
             {
-                $this->db->where('client_id', $this->orca_auth->user->client_id);
+                //$this->db->where('client_id', $this->orca_auth->user->client_id);
+				$this->db->where($this->orca_auth->user->client_id == 139 ? "client_id IN (45,46,47,70,139)" : ("client_id = {$this->orca_auth->user->client_id}"));
             }
 
             if ($q)

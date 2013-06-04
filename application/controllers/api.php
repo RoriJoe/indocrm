@@ -474,11 +474,11 @@ class API extends CI_Controller
 				if ($this->company->client_type == 0)
 				{
 					//khusus untuk cims.
-					if (isset($this->orca_auth->user) && in_array($this->orca_auth->user->client_id, array(48, 36)))
+					if (in_array($this->orca_auth->user->client_id, array(48, 36)))
                     {
 						$postfix .= "\nmalang.sbp.net.id\nvia IndoCRM.com";
 					}
-                    elseif (isset($this->orca_auth->user) && in_array($this->orca_auth->user->client_id, array(106)))
+                    elseif (in_array($this->orca_auth->user->client_id, array(106)))
                     {
 						$postfix .= "\n".$this->company->signature;
 					}
@@ -490,7 +490,7 @@ class API extends CI_Controller
 					$postfix .= "\n".$this->company->signature;
 				}
                 
-				if (isset($this->orca_auth->user) && in_array($this->orca_auth->user->client_id, array(48, 36)))
+				if (in_array($this->orca_auth->user->client_id, array(48, 36)))
                 {
 					$postfix = "";
 				}
@@ -520,8 +520,7 @@ class API extends CI_Controller
 			}
 			
 			$result['success'] = true;
-			if (isset($diff))
-				$result['counter'] = $diff;
+			$result['counter'] = $diff;
 			$result['error'] = 'Send OK';
 		}
 		else

@@ -92,14 +92,17 @@ class ORCA_Auth
         {
             if ($this->ci->form_validation->run())
             {
-                $username = set_value('username');
-                $password = $this->make_hash(set_value('password'), '', true);
+                $username = $_POST['username'];
+                $password = $this->make_hash($_POST['password'], '', true);
                 if ( $row = $this->ci->Users->get_by_userpass( $username, $password ) )
                 {
-					if ($this->ci->Users->client_active($row->client_id) == 1){
+					if ($row->client_id == 0 || $this->ci->Users->client_active($row->client_id) == 1)
+					{
 						$this->set_login($row);
 						return TRUE;
-					}else{
+					}
+					else
+					{
 						return FALSE;
 					}
                 }
